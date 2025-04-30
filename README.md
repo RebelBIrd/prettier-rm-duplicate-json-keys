@@ -1,4 +1,4 @@
-# Prettier Plugin: Remove Duplicate Keys
+# Prettier Plugin: Remove Duplicate JSON Keys
 
 A Prettier plugin that removes duplicate keys from JSON files and provides flexible sorting options.
 
@@ -13,7 +13,7 @@ A Prettier plugin that removes duplicate keys from JSON files and provides flexi
 ## Installation
 
 ```bash
-npm install --save-dev remove-duplicate-keys
+npm install --save-dev prettier-rm-duplicate-json-keys
 ```
 
 ## Usage
@@ -22,9 +22,9 @@ Add the plugin to your Prettier configuration:
 
 ```json
 {
+  "plugins": ["prettier-rm-duplicate-json-keys"],
   "jsonRecursiveSort": true,
-  "jsonSortOrder": "lexical",
-  "plugins": ["remove-duplicate-keys"]
+  "jsonSortOrder": "lexical"
 }
 ```
 
@@ -33,7 +33,6 @@ Add the plugin to your Prettier configuration:
 ### Options
 
 - `jsonRecursiveSort` (boolean, default: false)
-
   - When true, sorts JSON files recursively, including any nested properties
 
 - `jsonSortOrder` (string, default: "lexical")
@@ -77,6 +76,16 @@ Output JSON (with `jsonSortOrder: "lexical"`):
     "z": 1
   }
 }
+```
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
 ```
 
 ## License

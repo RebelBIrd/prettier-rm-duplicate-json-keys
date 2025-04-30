@@ -1,5 +1,6 @@
 # Prettier Plugin: Remove Duplicate JSON Keys
 
+Modified based on prettier-plugin-sort-json.
 A Prettier plugin that removes duplicate keys from JSON files and provides flexible sorting options.
 
 ## Features

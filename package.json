@@ -1,0 +1,31 @@
+{
+  "name": "prettier-rm-duplicate-json-keys",
+  "version": "1.0.0",
+  "description": "A Prettier plugin that removes duplicate keys from JSON files",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "prettier",
+    "prettier-plugin",
+    "json",
+    "duplicate-keys"
+  ],
+  "author": "TOM <chemwenxin@163.com>",
+  "license": "ISC",
+  "peerDependencies": {
+    "prettier": ">=2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "prettier": "^2.8.8",
+    "typescript": "^5.3.3"
+  }
+}

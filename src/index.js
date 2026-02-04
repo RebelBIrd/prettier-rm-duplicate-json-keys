@@ -46,21 +46,70 @@ const categorySortFunctions = {
   none: noneSort,
 }
 
+// 检查文件路径是否匹配指定的模式
+function matchesFilePattern(filepath, pattern) {
+  if (!pattern || !filepath) return true
+
+  // 支持多个模式，用逗号分隔
+  const patterns = pattern.split(',').map(p => p.trim())
+
+  for (const p of patterns) {
+    // 将 glob 模式转换为正则表达式
+    const regexPattern = p
+      .replace(/\./g, '\\.') // 转义点
+      .replace(/\*\*/g, '{{DOUBLE_STAR}}') // 临时替换 **
+      .replace(/\*/g, '[^/]*') // * 匹配非斜杠字符
+      .replace(/{{DOUBLE_STAR}}/g, '.*') // ** 匹配任意字符
+      .replace(/\?/g, '.') // ? 匹配单个字符
+
+    const regex = new RegExp(regexPattern)
+    if (regex.test(filepath)) {
+      return true
+    }
+  }
+  return false
+}
+
 // 去重和排序主函数
 function processJson(text, options) {
   try {
-    const json = JSON.parse(text)
-    const seen = new Set()
-    const result = {}
+    // 检查文件是否匹配指定的模式
+    const filepath = options.filepath || ''
+    const filePattern = options.jsonFilePattern || ''
 
-    // 递归处理对象，先去重
-    function deduplicateObject(obj) {
+    if (filePattern && !matchesFilePattern(filepath, filePattern)) {
+      // 不匹配模式，直接返回原文本（使用 prettier 默认格式化）
+      return JSON.stringify(JSON.parse(text), null, 2)
+    }
+
+    const json = JSON.parse(text)
+
+    // 递归处理对象，去重（只处理对象，不处理数组）
+    function deduplicateObject(obj, parentSeen = null) {
+      // 如果是数组，递归处理数组中的每个元素
+      if (Array.isArray(obj)) {
+        return obj.map(item => {
+          if (typeof item === 'object' && item !== null) {
+            return deduplicateObject(item, null)
+          }
+          return item
+        })
+      }
+
+      // 如果不是对象，直接返回
+      if (typeof obj !== 'object' || obj === null) {
+        return obj
+      }
+
+      // 对于对象，进行去重处理
+      const seen = parentSeen || new Set()
       const newObj = {}
       Object.keys(obj).forEach(key => {
         if (!seen.has(key)) {
           seen.add(key)
           if (typeof obj[key] === 'object' && obj[key] !== null) {
-            newObj[key] = deduplicateObject(obj[key])
+            // 对于嵌套对象/数组，使用新的 seen set
+            newObj[key] = deduplicateObject(obj[key], null)
           } else {
             newObj[key] = obj[key]
           }
@@ -71,8 +120,14 @@ function processJson(text, options) {
 
     // 递归排序对象
     function sortObject(obj, sortFunction) {
+      // 如果是数组，递归处理数组中的每个元素，但不对数组本身进行排序
       if (Array.isArray(obj)) {
         return obj.map(item => (typeof item === 'object' && item !== null ? sortObject(item, sortFunction) : item))
+      }
+
+      // 如果不是对象，直接返回
+      if (typeof obj !== 'object' || obj === null) {
+        return obj
       }
 
       const sortedKeys = Object.keys(obj).sort(sortFunction)
@@ -90,7 +145,7 @@ function processJson(text, options) {
     }
 
     // 先去重
-    const deduplicatedJson = deduplicateObject(json)
+    const deduplicatedJson = deduplicateObject(json, null)
 
     // 再排序
     const sortFunction = createSortFunction(options.jsonSortOrder)
@@ -134,6 +189,14 @@ module.exports = {
       description: 'A JSON string specifying a custom sort order',
       since: '0.0.4',
       type: 'string',
+    },
+    jsonFilePattern: {
+      category: 'json-sort',
+      description:
+        'A glob pattern to specify which files to process (e.g., "locales/*.json", "src/**/*.json"). Multiple patterns can be separated by commas.',
+      since: '1.2.0',
+      type: 'string',
+      default: '',
     },
   },
 }

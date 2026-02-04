@@ -41,6 +41,7 @@ jobs:
           
       - name: Update package.json version
         if: steps.version.outputs.version != ''
+        continue-on-error: true
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           if [ "$CURRENT_VERSION" != "${{ steps.version.outputs.version }}" ]; then
